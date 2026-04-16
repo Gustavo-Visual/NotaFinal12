@@ -10,6 +10,8 @@
     const html          = document.documentElement;
     const themeToggle   = document.getElementById("themeToggle");
     const themeIcon     = document.getElementById("themeIcon");
+    const appearanceToggle = document.getElementById("appearanceToggle");
+    const appearanceIcon   = document.getElementById("appearanceIcon");
     const tabCalc       = document.getElementById("tabCalc");
     const tabSim        = document.getElementById("tabSim");
     const tabCustom     = document.getElementById("tabCustom");
@@ -66,6 +68,7 @@
     // Share button
     const shareBtn     = document.getElementById("shareBtn");
     const shareBtnText = document.getElementById("shareBtnText");
+    const feedbackLink = document.getElementById("feedbackLink");
 
     let mode = "calculate";
     let customScaleMax = 20;
@@ -81,6 +84,7 @@
 
     const MAX_COMPONENTS = 8;
     const DEFAULT_FORMULA = "(📚 + 💼 + ⭐) ÷ 3 = Nota Final";
+    const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfSgk1IoXX3Hua3zlkoja9H16VugGSyBd2CUvABYba8_sH6Bg/viewform?usp=publish-editor";
 
     const PRESETS = {
         epromat: {
@@ -113,43 +117,103 @@
     ];
 
     // ── Theme System ──────────────────────────
-    const THEMES = ["epromat", "criativo", "escuro"];
-    const THEME_LABELS = { epromat: "🏫", criativo: "🎨", escuro: "🌙" };
-    const THEME_TITLES = {
-        epromat: "Mudar para tema Criativo",
-        criativo: "Mudar para tema Escuro",
-        escuro: "Mudar para tema EPROMAT"
+    const THEME_STYLES = ["epromat", "criativo"];
+    const THEME_ACTIONS = {
+        epromat: { next: "criativo", icon: "🎨", title: "Mudar para tema Criativo" },
+        criativo: { next: "epromat", icon: "🏫", title: "Mudar para tema EPROMAT" }
     };
+    const APPEARANCE_ACTIONS = {
+        light: { next: "dark", icon: "🌙", title: "Mudar para modo Escuro" },
+        dark: { next: "light", icon: "☀️", title: "Mudar para modo Claro" }
+    };
+    const THEME_COLOR_MAP = {
+        "epromat-light": "#1b1b2f",
+        "epromat-dark": "#121826",
+        "criativo-light": "#faf7f2",
+        "criativo-dark": "#1a1a1a"
+    };
+    const STORAGE_THEME_STYLE = "nota-final-theme-style";
+    const STORAGE_APPEARANCE = "nota-final-appearance";
+    const LEGACY_THEME_KEY = "nota-final-theme";
 
-    // Auto-detect dark mode on first visit
-    let currentTheme = localStorage.getItem("nota-final-theme");
-    if (!currentTheme) {
-        currentTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "epromat";
-    }
-    applyTheme(currentTheme);
+    let themeStyle = "epromat";
+    let appearance = "light";
+    loadThemePreferences();
+    applyThemeState();
 
     themeToggle.addEventListener("click", () => {
-        const idx = THEMES.indexOf(currentTheme);
-        currentTheme = THEMES[(idx + 1) % THEMES.length];
-        applyTheme(currentTheme);
-        localStorage.setItem("nota-final-theme", currentTheme);
+        const currentIdx = THEME_STYLES.indexOf(themeStyle);
+        themeStyle = THEME_STYLES[(currentIdx + 1) % THEME_STYLES.length];
+        persistThemePreferences();
+        applyThemeState();
     });
 
-    function applyTheme(theme) {
-        html.setAttribute("data-theme", theme);
-        const nextIdx = (THEMES.indexOf(theme) + 1) % THEMES.length;
-        themeIcon.textContent = THEME_LABELS[THEMES[nextIdx]];
-        themeToggle.title = THEME_TITLES[theme];
+    appearanceToggle.addEventListener("click", () => {
+        appearance = appearance === "dark" ? "light" : "dark";
+        persistThemePreferences();
+        applyThemeState();
+    });
 
-        // Update meta theme-color for mobile browsers
+    function loadThemePreferences() {
+        const storedStyle = localStorage.getItem(STORAGE_THEME_STYLE);
+        const storedAppearance = localStorage.getItem(STORAGE_APPEARANCE);
+
+        if (THEME_STYLES.includes(storedStyle)) {
+            themeStyle = storedStyle;
+        }
+        if (storedAppearance === "light" || storedAppearance === "dark") {
+            appearance = storedAppearance;
+        }
+
+        if (storedStyle || storedAppearance) return;
+
+        const legacyTheme = localStorage.getItem(LEGACY_THEME_KEY);
+        if (legacyTheme === "criativo") {
+            themeStyle = "criativo";
+            appearance = "light";
+        } else if (legacyTheme === "escuro") {
+            themeStyle = "epromat";
+            appearance = "dark";
+        } else if (legacyTheme === "epromat") {
+            themeStyle = "epromat";
+            appearance = "light";
+        }
+
+        if (legacyTheme) {
+            persistThemePreferences();
+            localStorage.removeItem(LEGACY_THEME_KEY);
+        }
+    }
+
+    function persistThemePreferences() {
+        localStorage.setItem(STORAGE_THEME_STYLE, themeStyle);
+        localStorage.setItem(STORAGE_APPEARANCE, appearance);
+    }
+
+    function applyThemeState() {
+        html.setAttribute("data-theme", themeStyle);
+        html.setAttribute("data-appearance", appearance);
+
+        const themeAction = THEME_ACTIONS[themeStyle];
+        themeIcon.textContent = themeAction.icon;
+        themeToggle.title = themeAction.title;
+        themeToggle.setAttribute("aria-label", themeAction.title);
+
+        const appearanceAction = APPEARANCE_ACTIONS[appearance];
+        appearanceIcon.textContent = appearanceAction.icon;
+        appearanceToggle.title = appearanceAction.title;
+        appearanceToggle.setAttribute("aria-label", appearanceAction.title);
+
         const metaTheme = document.querySelector('meta[name="theme-color"]');
         if (metaTheme) {
-            const colors = { epromat: "#1b1b2f", criativo: "#faf7f2", escuro: "#121218" };
-            metaTheme.content = colors[theme] || "#1b1b2f";
+            const colorKey = `${themeStyle}-${appearance}`;
+            metaTheme.content = THEME_COLOR_MAP[colorKey] || THEME_COLOR_MAP["epromat-light"];
         }
     }
 
     // ── Help Modal ────────────────────────────
+    feedbackLink.href = FEEDBACK_URL;
+
     helpBtn.addEventListener("click", () => {
         helpOverlay.classList.add("visible");
     });

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt" data-theme="epromat">
+<html lang="pt" data-theme="epromat" data-appearance="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,13 +18,16 @@
     <!-- Noise overlay (neubrutalism only) -->
     <div class="noise"></div>
 
-    <!-- Help Button -->
-    <button class="help-btn" id="helpBtn" title="Como funciona?">?</button>
-
-    <!-- Theme Toggle -->
-    <button class="theme-toggle" id="themeToggle" title="Mudar tema">
-        <span class="theme-toggle-icon" id="themeIcon">🎨</span>
-    </button>
+    <!-- Floating Controls -->
+    <div class="floating-controls" role="group" aria-label="Controlos rápidos">
+        <button class="control-btn help-btn" id="helpBtn" title="Como funciona?" aria-label="Abrir ajuda">?</button>
+        <button class="control-btn theme-toggle" id="themeToggle" title="Mudar tema" aria-label="Mudar tema">
+            <span class="control-icon" id="themeIcon">🎨</span>
+        </button>
+        <button class="control-btn appearance-toggle" id="appearanceToggle" title="Mudar modo" aria-label="Mudar modo">
+            <span class="control-icon" id="appearanceIcon">🌙</span>
+        </button>
+    </div>
 
     <!-- Help Modal -->
     <div class="help-overlay" id="helpOverlay">
@@ -309,6 +312,7 @@
                         <p class="credits-course">Curso de Multimédia · EPROMAT 2025/26</p>
                     </div>
                 </div>
+                <a class="feedback-link" id="feedbackLink" target="_blank" rel="noopener noreferrer">Enviar sugestão</a>
             </div>
         </footer>
     </main>
