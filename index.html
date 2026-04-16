@@ -9,21 +9,71 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif&family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1b1b2f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
     <!-- Noise overlay (neubrutalism only) -->
     <div class="noise"></div>
+
+    <!-- Help Button -->
+    <button class="help-btn" id="helpBtn" title="Como funciona?">?</button>
 
     <!-- Theme Toggle -->
     <button class="theme-toggle" id="themeToggle" title="Mudar tema">
         <span class="theme-toggle-icon" id="themeIcon">🎨</span>
     </button>
 
+    <!-- Help Modal -->
+    <div class="help-overlay" id="helpOverlay">
+        <div class="help-card">
+            <button class="help-close" id="helpClose">&times;</button>
+            <h2 class="help-title">Como funciona?</h2>
+
+            <div class="help-section">
+                <h3>Calcular</h3>
+                <p>Insere as tuas notas nas 3 componentes e a média final é calculada automaticamente. Cada componente vale ⅓ do resultado.</p>
+                <div class="help-formula-display">(📚 + 💼 + ⭐) ÷ 3 = Nota Final</div>
+            </div>
+
+            <div class="help-section">
+                <h3>Componentes EPROMAT</h3>
+                <div class="help-component">
+                    <span class="help-component-dot" style="background: #e91e63"></span>
+                    <span class="help-component-name">📚 Disciplinas</span>
+                    <span class="help-component-desc">— Média das disciplinas do curso</span>
+                </div>
+                <div class="help-component">
+                    <span class="help-component-dot" style="background: #2196f3"></span>
+                    <span class="help-component-name">💼 Estágio</span>
+                    <span class="help-component-desc">— Formação em contexto de trabalho</span>
+                </div>
+                <div class="help-component">
+                    <span class="help-component-dot" style="background: #ff9800"></span>
+                    <span class="help-component-name">⭐ PAP</span>
+                    <span class="help-component-desc">— Prova de Aptidão Profissional</span>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h3>Simular</h3>
+                <p>Define um objetivo e preenche as notas que já sabes. O calculador mostra o mínimo que precisas nas restantes componentes. Usa os sliders para explorar cenários rapidamente.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>Personalizado</h3>
+                <p>Cria a tua própria estrutura de avaliação com componentes e pesos personalizados. Ideal para ensino regular, superior, ou qualquer sistema de notas.</p>
+            </div>
+        </div>
+    </div>
+
     <main id="app">
         <!-- Header -->
         <header class="hero">
             <div class="hero-logo" id="heroLogo">
-                <img src="Imgs/EpromatLogo.png" alt="EPROMAT" class="epromat-logo">
+                <img src="Imgs/EpromatLogo.png" alt="EPROMAT" class="epromat-logo" onerror="this.style.display='none'">
             </div>
             <div class="hero-tag">
                 <span class="tag-pill">12º ANO</span>
@@ -37,20 +87,24 @@
         </header>
 
         <!-- Mode Tabs -->
-        <nav class="tabs" id="tabs">
-            <button class="tab active" data-mode="calculate" id="tabCalc">
+        <nav class="tabs" id="tabs" role="tablist">
+            <button class="tab active" data-mode="calculate" id="tabCalc" role="tab" aria-selected="true">
                 <span class="tab-emoji">🧮</span>
                 Calcular
             </button>
-            <button class="tab" data-mode="simulate" id="tabSim">
+            <button class="tab" data-mode="simulate" id="tabSim" role="tab" aria-selected="false">
                 <span class="tab-emoji">🎯</span>
                 Simular
+            </button>
+            <button class="tab" data-mode="custom" id="tabCustom" role="tab" aria-selected="false">
+                <span class="tab-emoji">✏️</span>
+                Personalizado
             </button>
             <div class="tab-indicator" id="tabIndicator"></div>
         </nav>
 
         <!-- ============ CALCULATE MODE ============ -->
-        <section class="bento" id="calculateMode">
+        <section class="bento" id="calculateMode" role="tabpanel">
             <div class="bento-card card-subjects" id="cardSubjects">
                 <div class="card-top">
                     <span class="card-emoji">📚</span>
@@ -59,10 +113,11 @@
                 <h2 class="card-title">Disciplinas</h2>
                 <p class="card-desc">Média final das tuas disciplinas</p>
                 <div class="grade-input-wrap">
-                    <input type="number" id="inputSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="—">
+                    <input type="number" id="inputSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Nota de Disciplinas (0 a 20)">
                     <div class="input-bar" id="barSubjects"></div>
                 </div>
                 <div class="input-range-label"><span>0</span><span>20</span></div>
+                <div class="input-error hidden"></div>
             </div>
 
             <div class="bento-card card-internship" id="cardInternship">
@@ -73,10 +128,11 @@
                 <h2 class="card-title">Estágio</h2>
                 <p class="card-desc">Nota da formação em contexto de trabalho</p>
                 <div class="grade-input-wrap">
-                    <input type="number" id="inputInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="—">
+                    <input type="number" id="inputInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Nota de Estágio (0 a 20)">
                     <div class="input-bar" id="barInternship"></div>
                 </div>
                 <div class="input-range-label"><span>0</span><span>20</span></div>
+                <div class="input-error hidden"></div>
             </div>
 
             <div class="bento-card card-pap" id="cardPAP">
@@ -87,15 +143,16 @@
                 <h2 class="card-title">PAP</h2>
                 <p class="card-desc">Prova de Aptidão Profissional</p>
                 <div class="grade-input-wrap">
-                    <input type="number" id="inputPAP" class="grade-input" min="0" max="20" step="0.1" placeholder="—">
+                    <input type="number" id="inputPAP" class="grade-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Nota de PAP (0 a 20)">
                     <div class="input-bar" id="barPAP"></div>
                 </div>
                 <div class="input-range-label"><span>0</span><span>20</span></div>
+                <div class="input-error hidden"></div>
             </div>
         </section>
 
         <!-- ============ SIMULATE MODE ============ -->
-        <section class="simulate hidden" id="simulateMode">
+        <section class="simulate hidden" id="simulateMode" role="tabpanel">
             <div class="goal-banner">
                 <div class="goal-left">
                     <span class="goal-emoji">🎯</span>
@@ -105,7 +162,7 @@
                     </div>
                 </div>
                 <div class="goal-input-wrap">
-                    <input type="number" id="inputGoal" class="goal-input" min="0" max="20" step="0.1" placeholder="—">
+                    <input type="number" id="inputGoal" class="goal-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Nota objetivo (0 a 20)">
                     <span class="goal-slash">/20</span>
                 </div>
             </div>
@@ -121,10 +178,14 @@
                     <h2 class="card-title">Disciplinas</h2>
                     <p class="card-desc">Deixa vazio se não sabes ainda</p>
                     <div class="grade-input-wrap">
-                        <input type="number" id="simSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="?">
+                        <input type="number" id="simSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Nota de Disciplinas (0 a 20)">
                         <div class="input-bar" id="simBarSubjects"></div>
                     </div>
+                    <div class="slider-wrap">
+                        <input type="range" id="sliderSimSubjects" class="grade-slider" min="0" max="20" step="0.1" value="0" aria-label="Slider Disciplinas">
+                    </div>
                     <div class="input-range-label"><span>0</span><span>20</span></div>
+                    <div class="input-error hidden"></div>
                 </div>
 
                 <div class="bento-card card-internship" id="simCardInternship">
@@ -135,10 +196,14 @@
                     <h2 class="card-title">Estágio</h2>
                     <p class="card-desc">Deixa vazio se não sabes ainda</p>
                     <div class="grade-input-wrap">
-                        <input type="number" id="simInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="?">
+                        <input type="number" id="simInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Nota de Estágio (0 a 20)">
                         <div class="input-bar" id="simBarInternship"></div>
                     </div>
+                    <div class="slider-wrap">
+                        <input type="range" id="sliderSimInternship" class="grade-slider" min="0" max="20" step="0.1" value="0" aria-label="Slider Estágio">
+                    </div>
                     <div class="input-range-label"><span>0</span><span>20</span></div>
+                    <div class="input-error hidden"></div>
                 </div>
 
                 <div class="bento-card card-pap" id="simCardPAP">
@@ -149,16 +214,60 @@
                     <h2 class="card-title">PAP</h2>
                     <p class="card-desc">Deixa vazio se não sabes ainda</p>
                     <div class="grade-input-wrap">
-                        <input type="number" id="simPAP" class="grade-input" min="0" max="20" step="0.1" placeholder="?">
+                        <input type="number" id="simPAP" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Nota de PAP (0 a 20)">
                         <div class="input-bar" id="simBarPAP"></div>
                     </div>
+                    <div class="slider-wrap">
+                        <input type="range" id="sliderSimPAP" class="grade-slider" min="0" max="20" step="0.1" value="0" aria-label="Slider PAP">
+                    </div>
                     <div class="input-range-label"><span>0</span><span>20</span></div>
+                    <div class="input-error hidden"></div>
                 </div>
             </div>
         </section>
 
+        <!-- ============ CUSTOM MODE ============ -->
+        <section class="custom hidden" id="customMode" role="tabpanel">
+            <!-- Settings row: preset + grade scale -->
+            <div class="custom-settings">
+                <div class="custom-presets">
+                    <label class="preset-label" for="presetSelect">Predefinição:</label>
+                    <select id="presetSelect" class="preset-select">
+                        <option value="">— Personalizado —</option>
+                        <option value="epromat">EPROMAT (⅓ + ⅓ + ⅓)</option>
+                        <option value="regular">Ensino Regular (70% + 30%)</option>
+                        <option value="superior">Ensino Superior (60% + 40%)</option>
+                    </select>
+                </div>
+                <div class="custom-scale">
+                    <label class="preset-label" for="scaleMax">Escala:</label>
+                    <div class="scale-input-wrap">
+                        <span class="scale-prefix">0 –</span>
+                        <input type="number" id="scaleMax" class="scale-input" min="1" max="200" step="1" value="20" aria-label="Nota máxima da escala">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weight status bar -->
+            <div class="weight-status" id="weightStatus">
+                <div class="weight-bar-track">
+                    <div class="weight-bar-fill" id="weightBarFill"></div>
+                </div>
+                <span class="weight-label" id="weightLabel">0% / 100%</span>
+                <button class="auto-distribute-btn" id="autoDistributeBtn" title="Distribuir peso igualmente">⚖️</button>
+            </div>
+
+            <div class="custom-components" id="customComponents">
+                <!-- JS renders component rows here -->
+            </div>
+
+            <button class="add-component-btn" id="addComponentBtn">
+                <span>+</span> Adicionar componente
+            </button>
+        </section>
+
         <!-- ============ RESULT PANEL ============ -->
-        <section class="result-panel hidden" id="resultPanel">
+        <section class="result-panel hidden" id="resultPanel" aria-live="polite">
             <div class="result-top-row">
                 <div class="result-big-number" id="resultBigNumber">
                     <span class="big-num" id="bigNum">0</span>
@@ -178,17 +287,22 @@
             <div class="result-breakdown" id="resultBreakdown"></div>
 
             <div class="result-msg hidden" id="resultMsg"></div>
+
+            <button class="share-btn" id="shareBtn">
+                <span class="share-emoji">📋</span>
+                <span id="shareBtnText">Copiar resultado</span>
+            </button>
         </section>
 
         <!-- Footer -->
         <footer class="footer">
             <div class="formula">
-                <code>(📚 + 💼 + ⭐) ÷ 3 = Nota Final</code>
+                <code id="formulaCode">(📚 + 💼 + ⭐) ÷ 3 = Nota Final</code>
             </div>
             <div class="credits">
                 <div class="credits-divider"></div>
                 <div class="credits-content">
-                    <img src="Imgs/EpromatLogo.png" alt="EPROMAT" class="credits-logo">
+                    <img src="Imgs/EpromatLogo.png" alt="EPROMAT" class="credits-logo" onerror="this.style.display='none'">
                     <div class="credits-text">
                         <p class="credits-made">Desenvolvido por</p>
                         <p class="credits-name">Gustavo Carita</p>

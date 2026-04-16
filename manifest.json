@@ -1,0 +1,23 @@
+{
+    "name": "Nota Final — 12º Ano | EPROMAT",
+    "short_name": "Nota Final",
+    "description": "Calcula a tua nota final do 12º ano com base nas disciplinas, estágio e PAP.",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#1b1b2f",
+    "theme_color": "#1b1b2f",
+    "orientation": "portrait-primary",
+    "lang": "pt",
+    "icons": [
+        {
+            "src": "Imgs/EpromatLogo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "Imgs/EpromatLogo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
