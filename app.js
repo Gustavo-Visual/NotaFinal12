@@ -10,8 +10,6 @@
     const html          = document.documentElement;
     const themeToggle   = document.getElementById("themeToggle");
     const themeIcon     = document.getElementById("themeIcon");
-    const appearanceToggle = document.getElementById("appearanceToggle");
-    const appearanceIcon   = document.getElementById("appearanceIcon");
     const tabCalc       = document.getElementById("tabCalc");
     const tabSim        = document.getElementById("tabSim");
     const tabCustom     = document.getElementById("tabCustom");
@@ -46,11 +44,6 @@
     const simInternship   = document.getElementById("simInternship");
     const simPAP          = document.getElementById("simPAP");
 
-    // Simulate sliders
-    const sliderSimSubjects   = document.getElementById("sliderSimSubjects");
-    const sliderSimInternship = document.getElementById("sliderSimInternship");
-    const sliderSimPAP        = document.getElementById("sliderSimPAP");
-
     // Custom mode DOM
     const presetSelect       = document.getElementById("presetSelect");
     const weightBarFill      = document.getElementById("weightBarFill");
@@ -83,16 +76,23 @@
     ];
 
     const MAX_COMPONENTS = 8;
-    const DEFAULT_FORMULA = "(📚 + 💼 + ⭐) ÷ 3 = Nota Final";
+    const DEFAULT_FORMULA = "(📚 média escolar × 66%) + (💼 FCT final × 11%) + (⭐ PAP × 23%) = Nota Final";
     const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfSgk1IoXX3Hua3zlkoja9H16VugGSyBd2CUvABYba8_sH6Bg/viewform?usp=publish-editor";
+    const CACHE_PREFIX = "nota-final-";
+    const APP_VERSION = "20260423-3";
+    const EPROMAT_WEIGHTS = {
+        subjects: 0.66,
+        internship: 0.11,
+        pap: 0.23
+    };
 
     const PRESETS = {
         epromat: {
             scale: 20,
             components: [
-                { name: "Disciplinas", weight: 33.33, grade: "" },
-                { name: "Estágio", weight: 33.33, grade: "" },
-                { name: "PAP", weight: 33.34, grade: "" }
+                { name: "Média escolar", weight: 66, grade: "" },
+                { name: "Estágio / FCT final", weight: 11, grade: "" },
+                { name: "PAP", weight: 23, grade: "" }
             ]
         },
         regular: {
@@ -117,97 +117,37 @@
     ];
 
     // ── Theme System ──────────────────────────
-    const THEME_STYLES = ["epromat", "criativo"];
-    const THEME_ACTIONS = {
-        epromat: { next: "criativo", icon: "🎨", title: "Mudar para tema Criativo" },
-        criativo: { next: "epromat", icon: "🏫", title: "Mudar para tema EPROMAT" }
+    const THEMES = ["epromat", "criativo", "escuro"];
+    const THEME_LABELS = { epromat: "🏫", criativo: "🎨", escuro: "🌙" };
+    const THEME_TITLES = {
+        epromat: "Mudar para tema Criativo",
+        criativo: "Mudar para tema Escuro",
+        escuro: "Mudar para tema EPROMAT"
     };
-    const APPEARANCE_ACTIONS = {
-        light: { next: "dark", icon: "🌙", title: "Mudar para modo Escuro" },
-        dark: { next: "light", icon: "☀️", title: "Mudar para modo Claro" }
-    };
-    const THEME_COLOR_MAP = {
-        "epromat-light": "#1b1b2f",
-        "epromat-dark": "#121826",
-        "criativo-light": "#faf7f2",
-        "criativo-dark": "#1a1a1a"
-    };
-    const STORAGE_THEME_STYLE = "nota-final-theme-style";
-    const STORAGE_APPEARANCE = "nota-final-appearance";
-    const LEGACY_THEME_KEY = "nota-final-theme";
 
-    let themeStyle = "epromat";
-    let appearance = "light";
-    loadThemePreferences();
-    applyThemeState();
+    let currentTheme = localStorage.getItem("nota-final-theme");
+    if (!currentTheme) {
+        currentTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "epromat";
+    }
+    applyTheme(currentTheme);
 
     themeToggle.addEventListener("click", () => {
-        const currentIdx = THEME_STYLES.indexOf(themeStyle);
-        themeStyle = THEME_STYLES[(currentIdx + 1) % THEME_STYLES.length];
-        persistThemePreferences();
-        applyThemeState();
+        const idx = THEMES.indexOf(currentTheme);
+        currentTheme = THEMES[(idx + 1) % THEMES.length];
+        applyTheme(currentTheme);
+        localStorage.setItem("nota-final-theme", currentTheme);
     });
 
-    appearanceToggle.addEventListener("click", () => {
-        appearance = appearance === "dark" ? "light" : "dark";
-        persistThemePreferences();
-        applyThemeState();
-    });
-
-    function loadThemePreferences() {
-        const storedStyle = localStorage.getItem(STORAGE_THEME_STYLE);
-        const storedAppearance = localStorage.getItem(STORAGE_APPEARANCE);
-
-        if (THEME_STYLES.includes(storedStyle)) {
-            themeStyle = storedStyle;
-        }
-        if (storedAppearance === "light" || storedAppearance === "dark") {
-            appearance = storedAppearance;
-        }
-
-        if (storedStyle || storedAppearance) return;
-
-        const legacyTheme = localStorage.getItem(LEGACY_THEME_KEY);
-        if (legacyTheme === "criativo") {
-            themeStyle = "criativo";
-            appearance = "light";
-        } else if (legacyTheme === "escuro") {
-            themeStyle = "epromat";
-            appearance = "dark";
-        } else if (legacyTheme === "epromat") {
-            themeStyle = "epromat";
-            appearance = "light";
-        }
-
-        if (legacyTheme) {
-            persistThemePreferences();
-            localStorage.removeItem(LEGACY_THEME_KEY);
-        }
-    }
-
-    function persistThemePreferences() {
-        localStorage.setItem(STORAGE_THEME_STYLE, themeStyle);
-        localStorage.setItem(STORAGE_APPEARANCE, appearance);
-    }
-
-    function applyThemeState() {
-        html.setAttribute("data-theme", themeStyle);
-        html.setAttribute("data-appearance", appearance);
-
-        const themeAction = THEME_ACTIONS[themeStyle];
-        themeIcon.textContent = themeAction.icon;
-        themeToggle.title = themeAction.title;
-        themeToggle.setAttribute("aria-label", themeAction.title);
-
-        const appearanceAction = APPEARANCE_ACTIONS[appearance];
-        appearanceIcon.textContent = appearanceAction.icon;
-        appearanceToggle.title = appearanceAction.title;
-        appearanceToggle.setAttribute("aria-label", appearanceAction.title);
+    function applyTheme(theme) {
+        html.setAttribute("data-theme", theme);
+        const nextIdx = (THEMES.indexOf(theme) + 1) % THEMES.length;
+        themeIcon.textContent = THEME_LABELS[THEMES[nextIdx]];
+        themeToggle.title = THEME_TITLES[theme];
 
         const metaTheme = document.querySelector('meta[name="theme-color"]');
         if (metaTheme) {
-            const colorKey = `${themeStyle}-${appearance}`;
-            metaTheme.content = THEME_COLOR_MAP[colorKey] || THEME_COLOR_MAP["epromat-light"];
+            const colors = { epromat: "#1b1b2f", criativo: "#faf7f2", escuro: "#121218" };
+            metaTheme.content = colors[theme] || "#1b1b2f";
         }
     }
 
@@ -294,30 +234,6 @@
         bar.style.setProperty("--fill", pct + "%");
     }
 
-    // ── Simulate Sliders ──────────────────────
-    const sliderPairs = [
-        { slider: sliderSimSubjects,   input: simSubjects },
-        { slider: sliderSimInternship, input: simInternship },
-        { slider: sliderSimPAP,        input: simPAP },
-    ];
-
-    sliderPairs.forEach(({ slider, input }) => {
-        slider.addEventListener("input", () => {
-            input.value = slider.value;
-            updateBar(input);
-            validateInput(input);
-            recalc();
-            saveInputs();
-        });
-
-        // Sync slider when number input changes
-        input.addEventListener("input", () => {
-            const v = parseFloat(input.value);
-            if (!isNaN(v)) slider.value = Math.max(0, Math.min(20, v));
-            else slider.value = 0;
-        });
-    });
-
     // ── Input Validation ──────────────────────
     function validateInput(el) {
         const card = el.closest(".bento-card") || el.closest(".custom-row");
@@ -332,8 +248,7 @@
             return;
         }
 
-        const n = parseFloat(raw);
-        if (isNaN(n) || n < 0 || n > 20) {
+        if (!isGradeInRange(raw, 20)) {
             errorDiv.textContent = "O valor deve estar entre 0 e 20";
             errorDiv.classList.remove("hidden");
         } else {
@@ -351,57 +266,59 @@
 
     // ── Calculate Mode ────────────────────────
     function calcFinal() {
+        if (hasInvalidGradeInputs(calcInputs, 20)) {
+            hideResult();
+            return;
+        }
+
         const s = parseGrade(inputSubjects.value);
         const i = parseGrade(inputInternship.value);
         const p = parseGrade(inputPAP.value);
-
-        const filled = [s, i, p].filter(v => v !== null);
-        if (filled.length === 0) { hideResult(); return; }
+        if (s === null || i === null || p === null) {
+            hideResult();
+            return;
+        }
 
         const rows = [];
-        if (s !== null) rows.push(makeRow("Disciplinas", "subjects", fmt(s)));
-        if (i !== null) rows.push(makeRow("Estágio",     "internship", fmt(i)));
-        if (p !== null) rows.push(makeRow("PAP",         "pap", fmt(p)));
+        rows.push(makeRow("Média escolar", "subjects", fmt(s)));
+        rows.push(makeRow("Estágio / FCT final", "internship", fmt(i)));
+        rows.push(makeRow("PAP", "pap", fmt(p)));
 
-        if (filled.length === 3) {
-            const final_ = (s + i + p) / 3;
-            showResult(final_, rows, null);
-        } else {
-            const partial = filled.reduce((a, b) => a + b, 0) / filled.length;
-            showResult(partial, rows, {
-                type: "info",
-                text: `Média parcial (${filled.length}/3). Usa "Simular" para calcular o que falta.`
-            });
-        }
+        showResult(calcEpromatFinal(s, i, p), rows, null);
     }
 
     // ── Simulate Mode ─────────────────────────
     function calcSim() {
+        if (hasInvalidGradeInputs(simInputs, 20)) {
+            hideResult();
+            return;
+        }
+
         const goal = parseGrade(inputGoal.value);
         if (goal === null) { hideResult(); return; }
 
-        const s = parseGrade(simSubjects.value);
-        const i = parseGrade(simInternship.value);
-        const p = parseGrade(simPAP.value);
+        const s = parseSimKnownGrade(simSubjects.value);
+        const i = parseSimKnownGrade(simInternship.value);
+        const p = parseSimKnownGrade(simPAP.value);
 
         const known   = [];
         const missing = [];
 
-        if (s !== null) known.push({ label: "Disciplinas", dot: "subjects", val: s });
-        else            missing.push({ label: "Disciplinas", dot: "subjects" });
+        if (s !== null) known.push({ label: "Média escolar", dot: "subjects", val: s, weight: EPROMAT_WEIGHTS.subjects });
+        else            missing.push({ label: "Média escolar", dot: "subjects", weight: EPROMAT_WEIGHTS.subjects });
 
-        if (i !== null) known.push({ label: "Estágio", dot: "internship", val: i });
-        else            missing.push({ label: "Estágio", dot: "internship" });
+        if (i !== null) known.push({ label: "Estágio / FCT final", dot: "internship", val: i, weight: EPROMAT_WEIGHTS.internship });
+        else            missing.push({ label: "Estágio / FCT final", dot: "internship", weight: EPROMAT_WEIGHTS.internship });
 
-        if (p !== null) known.push({ label: "PAP", dot: "pap", val: p });
-        else            missing.push({ label: "PAP", dot: "pap" });
+        if (p !== null) known.push({ label: "PAP", dot: "pap", val: p, weight: EPROMAT_WEIGHTS.pap });
+        else            missing.push({ label: "PAP", dot: "pap", weight: EPROMAT_WEIGHTS.pap });
 
         if (missing.length === 0) {
-            const final_ = (s + i + p) / 3;
+            const final_ = calcEpromatFinal(s, i, p);
             const diff = final_ - goal;
             const rows = [
-                makeRow("Disciplinas", "subjects", fmt(s)),
-                makeRow("Estágio", "internship", fmt(i)),
+                makeRow("Média escolar", "subjects", fmt(s)),
+                makeRow("Estágio / FCT final", "internship", fmt(i)),
                 makeRow("PAP", "pap", fmt(p)),
             ];
             let msg;
@@ -411,36 +328,47 @@
             return;
         }
 
-        if (missing.length === 3) {
-            const rows = [
-                makeRow("Disciplinas", "subjects", fmt(goal), true),
-                makeRow("Estágio", "internship", fmt(goal), true),
-                makeRow("PAP", "pap", fmt(goal), true),
-            ];
-            showResult(goal, rows, { type: "info", text: "Precisas desta nota em todas as componentes." });
+        if (missing.length > 1) {
+            const rows = known.map((k) => makeRow(k.label, k.dot, fmt(k.val)));
+            for (const m of missing) {
+                rows.push(makeRow(m.label, m.dot, "em branco"));
+            }
+            showResult(goal, rows, {
+                type: "info",
+                text: "Deixa apenas uma componente em branco para descobrir a nota mínima de que precisas."
+            });
             return;
         }
 
-        const sumKnown  = known.reduce((a, b) => a + b.val, 0);
-        const remaining = goal * 3 - sumKnown;
-        const each      = remaining / missing.length;
+        const weightedKnown = known.reduce((total, item) => total + (item.val * item.weight), 0);
+        const remainingWeight = missing.reduce((total, item) => total + item.weight, 0);
+        const each = remainingWeight > 0 ? (goal - weightedKnown) / remainingWeight : null;
 
         const rows = [];
         for (const k of known) {
             rows.push(makeRow(k.label, k.dot, fmt(k.val)));
         }
 
-        for (const m of missing) {
-            if (each > 20)      rows.push(makeRow(m.label, m.dot, "> 20", false, true));
-            else if (each < 0)  rows.push(makeRow(m.label, m.dot, "✓ Garantido", false, false));
-            else                rows.push(makeRow(m.label, m.dot, "≥ " + fmt(Math.ceil(each * 10) / 10), true));
+        let msg;
+        if (each === null) {
+            hideResult();
+            return;
         }
 
-        let msg;
-        if (each > 20)       msg = { type: "error",   text: "❌ Impossível — a nota necessária ultrapassa 20." };
-        else if (each < 0)   msg = { type: "success", text: "🏆 Já ultrapassaste o objetivo!" };
-        else if (each >= 18) msg = { type: "warning", text: "🔥 Vai ser difícil, mas não impossível. Força!" };
-        else                 msg = { type: "success", text: "✅ Objetivo alcançável. Vais conseguir! 💪" };
+        const onlyMissing = missing[0];
+        if (each > 20) {
+            rows.push(makeRow(onlyMissing.label, onlyMissing.dot, "> 20", false, true));
+            msg = { type: "error", text: "Impossível: a nota necessária ultrapassa 20." };
+        } else if (each < 0) {
+            rows.push(makeRow(onlyMissing.label, onlyMissing.dot, "Garantido"));
+            msg = { type: "success", text: "Já tens o objetivo garantido com as notas preenchidas." };
+        } else {
+            const needed = roundUpToTenth(each);
+            rows.push(makeRow(onlyMissing.label, onlyMissing.dot, "≥ " + fmt(needed), true));
+            msg = needed >= 18
+                ? { type: "warning", text: `Precisas de pelo menos ${fmt(needed)} em ${onlyMissing.label}.` }
+                : { type: "success", text: `Precisas de pelo menos ${fmt(needed)} em ${onlyMissing.label}.` };
+        }
 
         showResult(goal, rows, msg);
     }
@@ -588,8 +516,7 @@
             return;
         }
 
-        const n = parseFloat(raw);
-        if (isNaN(n) || n < 0 || n > customScaleMax) {
+        if (!isGradeInRange(raw, customScaleMax)) {
             errorDiv.textContent = `O valor deve estar entre 0 e ${customScaleMax}`;
             errorDiv.classList.remove("hidden");
         } else {
@@ -632,13 +559,16 @@
     }
 
     function parseCustomGrade(val) {
-        if (val === "" || val == null) return null;
-        const n = parseFloat(val);
-        if (isNaN(n)) return null;
-        return Math.max(0, Math.min(customScaleMax, n));
+        if (!isGradeInRange(val, customScaleMax)) return null;
+        return parseFloat(val);
     }
 
     function calcCustom() {
+        if (customComponents.some((comp) => !isGradeEntryValid(comp.grade, customScaleMax))) {
+            hideResult();
+            return;
+        }
+
         let totalWeight = 0;
         let hasNegativeWeight = false;
         for (const comp of customComponents) {
@@ -764,36 +694,87 @@
     shareBtn.addEventListener("click", () => {
         if (lastGrade === null) return;
 
+        const text = buildShareText();
+
+        copyText(text).then(() => {
+            showCopyStatus("Copiado!", true);
+        }).catch(() => {
+            showManualCopy(text);
+            showCopyStatus("Seleciona e copia", false);
+        });
+    });
+
+    function buildShareText() {
         const modeNames = { calculate: "Calcular", simulate: "Simular", custom: "Personalizado" };
-        let text = `📊 Nota Final — ${modeNames[mode] || mode}\n`;
-        text += `━━━━━━━━━━━━━━━━━━━\n`;
+        let text = `Nota Final EPROMAT — ${modeNames[mode] || mode}\n`;
+        text += `-------------------\n`;
         text += `Resultado: ${fmt(lastGrade)} / 20\n\n`;
 
         for (const row of lastRows) {
-            text += `• ${row.label}: ${row.value}\n`;
+            text += `- ${row.label}: ${row.value}\n`;
         }
 
         if (lastMessage) {
             text += `\n${lastMessage.text}\n`;
         }
 
-        text += `\n— Nota Final 12º Ano`;
+        text += `\nCursos Profissionais EPROMAT`;
+        return text;
+    }
 
-        navigator.clipboard.writeText(text).then(() => {
-            shareBtn.classList.add("copied");
-            shareBtnText.textContent = "Copiado!";
-            setTimeout(() => {
-                shareBtn.classList.remove("copied");
-                shareBtnText.textContent = "Copiar resultado";
-            }, 2000);
-        }).catch(() => {
-            // Fallback for older browsers
-            shareBtnText.textContent = "Erro ao copiar";
-            setTimeout(() => {
-                shareBtnText.textContent = "Copiar resultado";
-            }, 2000);
-        });
-    });
+    async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return;
+            } catch (_) {
+                // Continue to the legacy path when browser permissions block Clipboard API.
+            }
+        }
+
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.top = "-9999px";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        if (!ok) {
+            throw new Error("copy failed");
+        }
+    }
+
+    function showCopyStatus(label, copied) {
+        shareBtn.classList.toggle("copied", copied);
+        shareBtnText.textContent = label;
+        setTimeout(() => {
+            shareBtn.classList.remove("copied");
+            shareBtnText.textContent = "Copiar resultado";
+        }, 2000);
+    }
+
+    function showManualCopy(text) {
+        let manual = document.getElementById("manualCopyText");
+        if (!manual) {
+            manual = document.createElement("textarea");
+            manual.id = "manualCopyText";
+            manual.className = "manual-copy-text";
+            manual.setAttribute("readonly", "");
+            manual.setAttribute("aria-label", "Resultado para copiar manualmente");
+            shareBtn.insertAdjacentElement("afterend", manual);
+        }
+
+        manual.value = text;
+        manual.classList.remove("hidden");
+        manual.focus();
+        manual.select();
+    }
 
     // ── Formula Footer ────────────────────────
     function updateFormula() {
@@ -813,20 +794,7 @@
 
     // ── Animate number ────────────────────────
     function animateText(el, target) {
-        const targetNum = parseInt(target, 10);
-        const startNum  = parseInt(el.textContent, 10) || 0;
-        const start     = performance.now();
-        const dur       = 450;
-
-        function tick(now) {
-            const t = Math.min((now - start) / dur, 1);
-            const ease = 1 - Math.pow(1 - t, 3);
-            const curr = Math.round(startNum + (targetNum - startNum) * ease);
-            el.textContent = curr;
-            if (t < 1) requestAnimationFrame(tick);
-            else el.textContent = target;
-        }
-        requestAnimationFrame(tick);
+        el.textContent = target;
     }
 
     // ── localStorage Persistence ──────────────
@@ -865,13 +833,19 @@
         try {
             const sim = JSON.parse(localStorage.getItem("nota-final-sim"));
             if (sim) {
+                const lastVersion = localStorage.getItem("nota-final-version");
+                if (lastVersion !== APP_VERSION) {
+                    sim.subjects = "";
+                    sim.internship = "";
+                    sim.pap = "";
+                    localStorage.setItem("nota-final-version", APP_VERSION);
+                }
+
                 inputGoal.value     = sim.goal || "";
                 simSubjects.value   = sim.subjects || "";
                 simInternship.value = sim.internship || "";
                 simPAP.value        = sim.pap || "";
                 [simSubjects, simInternship, simPAP].forEach(updateBar);
-                // Sync sliders
-                syncSliders();
             }
         } catch (e) { /* ignore */ }
 
@@ -888,23 +862,45 @@
         } catch (e) { /* ignore */ }
     }
 
-    function syncSliders() {
-        sliderPairs.forEach(({ slider, input }) => {
-            const v = parseFloat(input.value);
-            slider.value = (!isNaN(v) && v >= 0 && v <= 20) ? v : 0;
-        });
-    }
-
     // ── Helpers ───────────────────────────────
     function parseGrade(val) {
-        if (val === "" || val == null) return null;
+        if (!isGradeInRange(val, 20)) return null;
+        return parseFloat(val);
+    }
+
+    function parseSimKnownGrade(val) {
+        const grade = parseGrade(val);
+        return grade === 0 ? null : grade;
+    }
+
+    function isGradeEntryValid(val, max) {
+        return val === "" || val == null || isGradeInRange(val, max);
+    }
+
+    function isGradeInRange(val, max) {
+        if (val === "" || val == null) return false;
         const n = parseFloat(val);
-        if (isNaN(n)) return null;
-        return Math.max(0, Math.min(20, n));
+        return !isNaN(n) && n >= 0 && n <= max;
+    }
+
+    function hasInvalidGradeInputs(inputs, max) {
+        return inputs.some((input) => !isGradeEntryValid(input.value, max));
     }
 
     function fmt(n) {
         return n.toFixed(1);
+    }
+
+    function roundUpToTenth(n) {
+        return Math.ceil(n * 10) / 10;
+    }
+
+    function calcEpromatFinal(subjects, internship, pap) {
+        return (
+            subjects * EPROMAT_WEIGHTS.subjects +
+            internship * EPROMAT_WEIGHTS.internship +
+            pap * EPROMAT_WEIGHTS.pap
+        );
     }
 
     function escHtml(str) {
@@ -919,7 +915,34 @@
     recalc();
 
     // ── Service Worker Registration ───────────
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js").catch(() => {});
+    setupServiceWorker();
+
+    async function setupServiceWorker() {
+        if (!("serviceWorker" in navigator)) return;
+
+        const host = window.location.hostname;
+        const isLocalhost = host === "localhost" || host === "127.0.0.1" || host === "::1";
+
+        try {
+            if (isLocalhost) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map((reg) => reg.unregister()));
+
+                if ("caches" in window) {
+                    const keys = await caches.keys();
+                    await Promise.all(
+                        keys
+                            .filter((key) => key.startsWith(CACHE_PREFIX))
+                            .map((key) => caches.delete(key))
+                    );
+                }
+                return;
+            }
+
+            const registration = await navigator.serviceWorker.register("sw.js");
+            registration.update().catch(() => {});
+        } catch (_) {
+            // Ignore service worker setup failures.
+        }
     }
 })();

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt" data-theme="epromat" data-appearance="light">
+<html lang="pt" data-theme="epromat">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nota Final — 12º Ano | EPROMAT</title>
-    <meta name="description" content="Calcula a tua nota final do 12º ano com base nas disciplinas, estágio e PAP.">
+    <title>Nota Final — Cursos Profissionais EPROMAT</title>
+    <meta name="description" content="Calcula a tua nota final dos Cursos Profissionais da EPROMAT com média escolar, FCT final e PAP.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif&family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
-    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="index.css?v=20260423-3">
+    <link rel="manifest" href="manifest.json?v=20260423-3">
     <meta name="theme-color" content="#1b1b2f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,16 +18,13 @@
     <!-- Noise overlay (neubrutalism only) -->
     <div class="noise"></div>
 
-    <!-- Floating Controls -->
-    <div class="floating-controls" role="group" aria-label="Controlos rápidos">
-        <button class="control-btn help-btn" id="helpBtn" title="Como funciona?" aria-label="Abrir ajuda">?</button>
-        <button class="control-btn theme-toggle" id="themeToggle" title="Mudar tema" aria-label="Mudar tema">
-            <span class="control-icon" id="themeIcon">🎨</span>
-        </button>
-        <button class="control-btn appearance-toggle" id="appearanceToggle" title="Mudar modo" aria-label="Mudar modo">
-            <span class="control-icon" id="appearanceIcon">🌙</span>
-        </button>
-    </div>
+    <!-- Help Button -->
+    <button class="help-btn" id="helpBtn" title="Como funciona?">?</button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" title="Mudar tema">
+        <span class="theme-toggle-icon" id="themeIcon">🎨</span>
+    </button>
 
     <!-- Help Modal -->
     <div class="help-overlay" id="helpOverlay">
@@ -37,21 +34,21 @@
 
             <div class="help-section">
                 <h3>Calcular</h3>
-                <p>Insere as tuas notas nas 3 componentes e a média final é calculada automaticamente. Cada componente vale ⅓ do resultado.</p>
-                <div class="help-formula-display">(📚 + 💼 + ⭐) ÷ 3 = Nota Final</div>
+                <p>Insere a média escolar, a FCT final e a PAP. A nota final é calculada com os pesos do curso.</p>
+                <div class="help-formula-display">(📚 média escolar × 66%) + (💼 FCT final × 11%) + (⭐ PAP × 23%) = Nota Final</div>
             </div>
 
             <div class="help-section">
-                <h3>Componentes EPROMAT</h3>
+                <h3>Componentes dos Cursos Profissionais EPROMAT</h3>
                 <div class="help-component">
                     <span class="help-component-dot" style="background: #e91e63"></span>
-                    <span class="help-component-name">📚 Disciplinas</span>
-                    <span class="help-component-desc">— Média das disciplinas do curso</span>
+                    <span class="help-component-name">📚 Média escolar</span>
+                    <span class="help-component-desc">— A média interna que a escola ou os professores te dão antes de FCT e PAP</span>
                 </div>
                 <div class="help-component">
                     <span class="help-component-dot" style="background: #2196f3"></span>
-                    <span class="help-component-name">💼 Estágio</span>
-                    <span class="help-component-desc">— Formação em contexto de trabalho</span>
+                    <span class="help-component-name">💼 Estágio / FCT final</span>
+                    <span class="help-component-desc">— Usa a classificação final de FCT dada pela escola</span>
                 </div>
                 <div class="help-component">
                     <span class="help-component-dot" style="background: #ff9800"></span>
@@ -62,7 +59,7 @@
 
             <div class="help-section">
                 <h3>Simular</h3>
-                <p>Define um objetivo e preenche as notas que já sabes. O calculador mostra o mínimo que precisas nas restantes componentes. Usa os sliders para explorar cenários rapidamente.</p>
+                <p>Define a nota final que queres, preenche duas componentes e deixa uma vazia. A app mostra a nota mínima que precisas nessa componente.</p>
             </div>
 
             <div class="help-section">
@@ -79,14 +76,14 @@
                 <img src="Imgs/EpromatLogo.png" alt="EPROMAT" class="epromat-logo" onerror="this.style.display='none'">
             </div>
             <div class="hero-tag">
-                <span class="tag-pill">12º ANO</span>
+                <span class="tag-pill">CURSOS PROFISSIONAIS</span>
                 <span class="tag-pill tag-secondary">2025/26</span>
             </div>
             <h1 class="hero-title">
                 <span class="hero-title-line1">Qual vai ser</span>
                 <span class="hero-title-line2">a tua <em>nota final</em>?</span>
             </h1>
-            <p class="hero-sub">Calcula a tua média final ou descobre o mínimo necessário para atingires o teu objetivo.</p>
+            <p class="hero-sub">Calcula a tua nota final dos Cursos Profissionais da EPROMAT com a média escolar, FCT final e PAP.</p>
         </header>
 
         <!-- Mode Tabs -->
@@ -111,12 +108,12 @@
             <div class="bento-card card-subjects" id="cardSubjects">
                 <div class="card-top">
                     <span class="card-emoji">📚</span>
-                    <span class="card-weight">⅓</span>
+                    <span class="card-weight">66%</span>
                 </div>
-                <h2 class="card-title">Disciplinas</h2>
-                <p class="card-desc">Média final das tuas disciplinas</p>
+                <h2 class="card-title">Média escolar</h2>
+                <p class="card-desc">A média que a escola te dá antes de FCT e PAP</p>
                 <div class="grade-input-wrap">
-                    <input type="number" id="inputSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Nota de Disciplinas (0 a 20)">
+                    <input type="number" id="inputSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Média escolar (0 a 20)">
                     <div class="input-bar" id="barSubjects"></div>
                 </div>
                 <div class="input-range-label"><span>0</span><span>20</span></div>
@@ -126,12 +123,12 @@
             <div class="bento-card card-internship" id="cardInternship">
                 <div class="card-top">
                     <span class="card-emoji">💼</span>
-                    <span class="card-weight">⅓</span>
+                    <span class="card-weight">11%</span>
                 </div>
-                <h2 class="card-title">Estágio</h2>
-                <p class="card-desc">Nota da formação em contexto de trabalho</p>
+                <h2 class="card-title">Estágio / FCT final</h2>
+                <p class="card-desc">Classificação final de FCT dada pela escola</p>
                 <div class="grade-input-wrap">
-                    <input type="number" id="inputInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Nota de Estágio (0 a 20)">
+                    <input type="number" id="inputInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="—" aria-label="Nota de Estágio / FCT final (0 a 20)">
                     <div class="input-bar" id="barInternship"></div>
                 </div>
                 <div class="input-range-label"><span>0</span><span>20</span></div>
@@ -141,7 +138,7 @@
             <div class="bento-card card-pap" id="cardPAP">
                 <div class="card-top">
                     <span class="card-emoji">⭐</span>
-                    <span class="card-weight">⅓</span>
+                    <span class="card-weight">23%</span>
                 </div>
                 <h2 class="card-title">PAP</h2>
                 <p class="card-desc">Prova de Aptidão Profissional</p>
@@ -161,7 +158,7 @@
                     <span class="goal-emoji">🎯</span>
                     <div>
                         <h2 class="goal-title">Objetivo</h2>
-                        <p class="goal-desc">A nota que queres alcançar</p>
+                        <p class="goal-desc">A nota final que queres alcançar</p>
                     </div>
                 </div>
                 <div class="goal-input-wrap">
@@ -170,22 +167,19 @@
                 </div>
             </div>
 
-            <p class="sim-hint">Preenche o que já sabes. O resto é calculado. ✨</p>
+            <p class="sim-hint">Escreve o teu objetivo, preenche duas notas e deixa em branco a nota que queres descobrir.</p>
 
             <div class="bento">
                 <div class="bento-card card-subjects" id="simCardSubjects">
                     <div class="card-top">
                         <span class="card-emoji">📚</span>
-                        <span class="card-weight">⅓</span>
+                        <span class="card-weight">66%</span>
                     </div>
-                    <h2 class="card-title">Disciplinas</h2>
-                    <p class="card-desc">Deixa vazio se não sabes ainda</p>
+                    <h2 class="card-title">Média escolar</h2>
+                    <p class="card-desc">Preenche se já sabes. Deixa vazio para descobrir quanto precisas</p>
                     <div class="grade-input-wrap">
-                        <input type="number" id="simSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Nota de Disciplinas (0 a 20)">
+                        <input type="number" id="simSubjects" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Média escolar (0 a 20)">
                         <div class="input-bar" id="simBarSubjects"></div>
-                    </div>
-                    <div class="slider-wrap">
-                        <input type="range" id="sliderSimSubjects" class="grade-slider" min="0" max="20" step="0.1" value="0" aria-label="Slider Disciplinas">
                     </div>
                     <div class="input-range-label"><span>0</span><span>20</span></div>
                     <div class="input-error hidden"></div>
@@ -194,16 +188,13 @@
                 <div class="bento-card card-internship" id="simCardInternship">
                     <div class="card-top">
                         <span class="card-emoji">💼</span>
-                        <span class="card-weight">⅓</span>
+                        <span class="card-weight">11%</span>
                     </div>
-                    <h2 class="card-title">Estágio</h2>
-                    <p class="card-desc">Deixa vazio se não sabes ainda</p>
+                    <h2 class="card-title">Estágio / FCT final</h2>
+                    <p class="card-desc">Preenche se já sabes. Deixa vazio para descobrir quanto precisas</p>
                     <div class="grade-input-wrap">
-                        <input type="number" id="simInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Nota de Estágio (0 a 20)">
+                        <input type="number" id="simInternship" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Nota de Estágio / FCT final (0 a 20)">
                         <div class="input-bar" id="simBarInternship"></div>
-                    </div>
-                    <div class="slider-wrap">
-                        <input type="range" id="sliderSimInternship" class="grade-slider" min="0" max="20" step="0.1" value="0" aria-label="Slider Estágio">
                     </div>
                     <div class="input-range-label"><span>0</span><span>20</span></div>
                     <div class="input-error hidden"></div>
@@ -212,16 +203,13 @@
                 <div class="bento-card card-pap" id="simCardPAP">
                     <div class="card-top">
                         <span class="card-emoji">⭐</span>
-                        <span class="card-weight">⅓</span>
+                        <span class="card-weight">23%</span>
                     </div>
                     <h2 class="card-title">PAP</h2>
-                    <p class="card-desc">Deixa vazio se não sabes ainda</p>
+                    <p class="card-desc">Preenche se já sabes. Deixa vazio para descobrir quanto precisas</p>
                     <div class="grade-input-wrap">
                         <input type="number" id="simPAP" class="grade-input" min="0" max="20" step="0.1" placeholder="?" aria-label="Nota de PAP (0 a 20)">
                         <div class="input-bar" id="simBarPAP"></div>
-                    </div>
-                    <div class="slider-wrap">
-                        <input type="range" id="sliderSimPAP" class="grade-slider" min="0" max="20" step="0.1" value="0" aria-label="Slider PAP">
                     </div>
                     <div class="input-range-label"><span>0</span><span>20</span></div>
                     <div class="input-error hidden"></div>
@@ -237,7 +225,7 @@
                     <label class="preset-label" for="presetSelect">Predefinição:</label>
                     <select id="presetSelect" class="preset-select">
                         <option value="">— Personalizado —</option>
-                        <option value="epromat">EPROMAT (⅓ + ⅓ + ⅓)</option>
+                        <option value="epromat">EPROMAT (média escolar 66% + 11% + 23%)</option>
                         <option value="regular">Ensino Regular (70% + 30%)</option>
                         <option value="superior">Ensino Superior (60% + 40%)</option>
                     </select>
@@ -300,7 +288,7 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="formula">
-                <code id="formulaCode">(📚 + 💼 + ⭐) ÷ 3 = Nota Final</code>
+                <code id="formulaCode">(📚 média escolar × 66%) + (💼 FCT final × 11%) + (⭐ PAP × 23%) = Nota Final</code>
             </div>
             <div class="credits">
                 <div class="credits-divider"></div>
@@ -308,8 +296,8 @@
                     <img src="Imgs/EpromatLogo.png" alt="EPROMAT" class="credits-logo" onerror="this.style.display='none'">
                     <div class="credits-text">
                         <p class="credits-made">Desenvolvido por</p>
-                        <p class="credits-name">Gustavo Carita</p>
-                        <p class="credits-course">Curso de Multimédia · EPROMAT 2025/26</p>
+                        <p class="credits-name">Gustavo Carita - Multimédia</p>
+                        <p class="credits-course">Cursos Profissionais · EPROMAT 2025/26</p>
                     </div>
                 </div>
                 <a class="feedback-link" id="feedbackLink" target="_blank" rel="noopener noreferrer">Enviar sugestão</a>
@@ -317,6 +305,6 @@
         </footer>
     </main>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=20260423-3"></script>
 </body>
 </html>
